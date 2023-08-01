@@ -32,6 +32,22 @@
 $ npm install
 ```
 
+## Running the postgres docker image
+
+```bash
+# setup docker container
+$ docker container run --name nest-task-management -p 5432:5432 -e POSTGRES_PASSWORD=astrongpassword -d postgres
+
+# start docker container
+$ docker container start nest-task-management
+
+# stop docker container
+$ docker container stop nest-task-management
+
+# remove docker container
+$ docker container rm nest-task-management
+```
+
 ## Running the app
 
 ```bash
