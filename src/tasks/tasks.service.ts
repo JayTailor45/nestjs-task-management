@@ -5,7 +5,7 @@ import { CreateTaskDto } from './dto/create-task.dto';
 
 @Injectable()
 export class TasksService {
-    private readonly tasks: Task[] = [];
+    private tasks: Task[] = [];
 
     getAllTasks(): Task[] {
         return this.tasks;
@@ -31,5 +31,14 @@ export class TasksService {
             throw new NotFoundException(`Task with the id ${id} does not found`);
         }
         return task;
+    }
+
+    deleteTaskById(id: string): Task[] {
+        const task = this.tasks.find(task => task.id === id);
+        if(!task) {
+            throw new NotFoundException(`Task with the id ${id} does not found`);
+        }
+        this.tasks = this.tasks.filter(task => task.id !== id);
+        return this.tasks;
     }
 }
