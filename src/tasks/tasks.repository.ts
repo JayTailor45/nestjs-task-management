@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { Injectable, InternalServerErrorException, Logger, NotFoundException } from "@nestjs/common";
 import { User } from "src/auth/user.entity";
 import { DataSource, Repository } from "typeorm";
 import { CreateTaskDto } from "./dto/create-task.dto";
@@ -9,6 +9,8 @@ import { Task } from "./task.entity";
 @Injectable()
 export class TaskRepository extends Repository<Task> {
     // https://github.com/typeorm/typeorm/issues/9389#issuecomment-1263235683
+
+    private logger = new Logger('TaskRepository', {timestamp: true});
 
     constructor(private dataSource: DataSource) {
         super(Task, dataSource.createEntityManager())
@@ -27,13 +29,19 @@ export class TaskRepository extends Repository<Task> {
                 { search: `%${search}%` },
             );
         }
-        const tasks = await query.getMany();
-        return tasks;
+        try {
+            const tasks = await query.getMany();
+            return tasks;
+        } catch (error) {
+            this.logger.error(`Failed to get tasks for user ${user.username}. Filters: ${JSON.stringify(filterDto)}`, error.stack)
+            throw new InternalServerErrorException();
+        }
     }
 
     async getTaskById(id: string, user: User) {
         const task = await this.findOneBy({ id, user });
         if(!task) {
+            this.logger.error(`Failed to get task ${id} for user ${user.username}`)
             throw new NotFoundException(`Task with the id ${id} does not found`);
         }
         return task;
@@ -47,8 +55,13 @@ export class TaskRepository extends Repository<Task> {
             status: TaskStatus.OPEN,
             user: user,
         });
-        await this.save(task);
-        return task;
+        try {
+            await this.save(task);
+            return task;
+        } catch (error) {
+            this.logger.error(`Failed to add task for user ${user.username}. Data: ${JSON.stringify(createTaskDto)}`, error.stack)
+            throw new InternalServerErrorException();
+        }
     }
 
 }
