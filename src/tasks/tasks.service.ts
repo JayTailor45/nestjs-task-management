@@ -14,27 +14,27 @@ export class TasksService {
         private tasksRepo: TaskRepository,
     ) {}
 
-    getTasks(filterDto: GetTasksFilterDto): Promise<Task[]> {
-        return this.tasksRepo.getTasks(filterDto);
+    getTasks(filterDto: GetTasksFilterDto, user: User): Promise<Task[]> {
+        return this.tasksRepo.getTasks(filterDto, user);
     }
 
     createTask(createTaskDto: CreateTaskDto, user: User): Promise<Task> {
         return this.tasksRepo.createTask(createTaskDto, user);
     }
 
-    async getTaskById(id: string): Promise<Task> {
-        return this.tasksRepo.getTaskById(id);
+    async getTaskById(id: string, user: User): Promise<Task> {
+        return this.tasksRepo.getTaskById(id, user);
     }
 
-    async deleteTaskById(id: string): Promise<void> {
-        const result = await this.tasksRepo.delete(id);
+    async deleteTaskById(id: string, user: User): Promise<void> {
+        const result = await this.tasksRepo.delete({ id, user });
         if(result.affected === 0) {
             throw new NotFoundException(`Task with the id ${id} does not found`);
         }
     }
 
-    async updateTaskStatus(id: string, status: TaskStatus): Promise<Task> {
-        const task = await this.getTaskById(id);
+    async updateTaskStatus(id: string, status: TaskStatus, user: User): Promise<Task> {
+        const task = await this.getTaskById(id, user);
         task.status = status;
         await this.tasksRepo.save(task);
         return task;
