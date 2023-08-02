@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
+import { User } from "src/auth/user.entity";
 import { DataSource, Repository } from "typeorm";
 import { CreateTaskDto } from "./dto/create-task.dto";
 import { GetTasksFilterDto } from "./dto/get-tasks-filter.dto";
@@ -37,12 +38,13 @@ export class TaskRepository extends Repository<Task> {
         return task;
     }
 
-    async createTask(createTaskDto: CreateTaskDto) {
+    async createTask(createTaskDto: CreateTaskDto, user: User) {
         const {title, description} = createTaskDto;
         const task = this.create({
             title,
             description,
             status: TaskStatus.OPEN,
+            user: user,
         });
         await this.save(task);
         return task;
